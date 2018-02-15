@@ -6,17 +6,18 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/airking05/go-auto-trader/logger"
-	"github.com/airking05/go-auto-trader/models"
-	"github.com/antonholmquist/jason"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/airking05/go-auto-trader/logger"
+	"github.com/airking05/go-auto-trader/models"
+	"github.com/antonholmquist/jason"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -245,7 +246,7 @@ func (b *BitflyerApi) CompleteBalances() (map[string]*models.Balance, error) {
 func (b *BitflyerApi) ActiveOrders() ([]*models.Order, error) {
 	activeOrderurl := "/v1/me/getchildorders?child_order_state=ACTIVE&product_code=BTC_JPY"
 	method := "GET"
-	var params map[string]string
+	params := make(map[string]string)
 	params["child_order_state"] = "ACTIVE"
 	resBody, err := b.privateApi(activeOrderurl, method, params)
 	if err != nil {
