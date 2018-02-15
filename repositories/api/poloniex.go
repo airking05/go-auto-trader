@@ -7,11 +7,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/antonholmquist/jason"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/pkg/errors"
-	"gitlab.com/fxpg/alphatrader/logger"
-	"gitlab.com/fxpg/alphatrader/models"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -19,6 +14,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/airking05/go-auto-trader/logger"
+	"github.com/airking05/go-auto-trader/models"
+	"github.com/antonholmquist/jason"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -280,7 +281,7 @@ func (p *PoloniexApi) ActiveOrders() ([]*models.Order, error) {
 		}
 
 		for _, o := range os {
-			orderNumber, err := strconv.ParseInt(o.OrderNumber, 10, 64)
+			_, err := strconv.ParseInt(o.OrderNumber, 10, 64)
 			if err != nil {
 				return nil, errors.Wrapf(err, "cannot parse ordernumber: %s", o.OrderNumber)
 			}
@@ -306,12 +307,12 @@ func (p *PoloniexApi) ActiveOrders() ([]*models.Order, error) {
 			}
 
 			c := &models.Order{
-				ID:         int(orderNumber),
-				Type:       orderType,
-				Trading:    trading,
-				Settlement: settlement,
-				Price:      rate,
-				Amount:     amount,
+				ExchangeOrderID: o.OrderNumber,
+				Type:            orderType,
+				Trading:         trading,
+				Settlement:      settlement,
+				Price:           rate,
+				Amount:          amount,
 			}
 			orders = append(orders, c)
 		}
