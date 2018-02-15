@@ -22,26 +22,26 @@ type TraderBot interface {
 }
 
 type traderBot struct {
-	ChartRepository ChartRepository `inject:""`
-	PositionRepository PositionRepository `inject:""`
-	OrderRepository OrderRepository `inject:""`
+	ChartRepository           ChartRepository    `inject:""`
+	PositionRepository        PositionRepository `inject:""`
+	OrderRepository           OrderRepository    `inject:""`
 	ExchangePrivateRepository ExchangePrivateRepository
-	Position     *models.Position
-	Phase        models.TradePhase
-	traderConfig *models.TraderGorm
+	Position                  *models.Position
+	Phase                     models.TradePhase
+	traderConfig              *models.TraderGorm
 
-	entrylogics  models.Logic
+	entrylogics models.Logic
 }
 
 type TraderServiceImpl struct {
-	ChartRepository ChartRepository `inject:""`
+	ChartRepository    ChartRepository    `inject:""`
 	PositionRepository PositionRepository `inject:""`
-	OrderRepository OrderRepository `inject:""`
-	botMap map[int]context.CancelFunc
+	OrderRepository    OrderRepository    `inject:""`
+	botMap             map[int]context.CancelFunc
 }
 
 func (t *traderBot) JudgeEntry() bool {
-	charts,err := t.ChartRepository.FindN(t.traderConfig.ExchangeID,t.traderConfig.Duration,t.traderConfig.Trading,t.traderConfig.Settlement,50)
+	charts, err := t.ChartRepository.FindN(t.traderConfig.ExchangeID, t.traderConfig.Duration, t.traderConfig.Trading, t.traderConfig.Settlement, 50)
 	if err != nil {
 		return false
 	}
@@ -49,58 +49,66 @@ func (t *traderBot) JudgeEntry() bool {
 }
 
 func (t *traderBot) SetPositionMade(positionID uint, orderID string) error {
-	if err := t.PositionRepository.UpdateToMade(positionID);err != nil {
+	if err := t.PositionRepository.UpdateToMade(positionID); err != nil {
 		return err
 	}
 	var orderType models.OrderType
-	if t.traderConfig.PositionType == models.Long{orderType = models.Ask}else{orderType = models.Bid}
-	orderData := &models.OrderGorm{
-		Order:models.Order{
-			ExchangeOrderID:orderID,
-			Type: orderType,
-			Trading:t.traderConfig.Trading,
-			Settlement:t.traderConfig.Settlement,},
-		ExchangeID:t.traderConfig.ExchangeID,
-		TraderID:(t.traderConfig.ID),
-		PositionID:positionID,
-		Status: true,
-		Price:     t.Position.EntryPrice,
+	if t.traderConfig.PositionType == models.Long {
+		orderType = models.Ask
+	} else {
+		orderType = models.Bid
 	}
-	orderLocalID,err :=t.OrderRepository.Insert(orderData)
+	orderData := &models.OrderGorm{
+		Order: models.Order{
+			ExchangeOrderID: orderID,
+			Type:            orderType,
+			Trading:         t.traderConfig.Trading,
+			Settlement:      t.traderConfig.Settlement},
+		ExchangeID: t.traderConfig.ExchangeID,
+		TraderID:   (t.traderConfig.ID),
+		PositionID: positionID,
+		Status:     true,
+		Price:      t.Position.EntryPrice,
+	}
+	orderLocalID, err := t.OrderRepository.Insert(orderData)
 	if err != nil {
 		return err
 	}
-	if err = t.PositionRepository.UpdateEntryOrder(positionID,orderLocalID); err != nil {
+	if err = t.PositionRepository.UpdateEntryOrder(positionID, orderLocalID); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (t *traderBot) SetPositionClosed(positionID uint, orderID string, price float64) error {
-	if err := t.PositionRepository.UpdateToClosed(positionID);err != nil {
+	if err := t.PositionRepository.UpdateToClosed(positionID); err != nil {
 		return err
 	}
 	var orderType models.OrderType
-	if t.traderConfig.PositionType == models.Long{orderType = models.Bid}else{orderType = models.Ask}
+	if t.traderConfig.PositionType == models.Long {
+		orderType = models.Bid
+	} else {
+		orderType = models.Ask
+	}
 	orderData := &models.OrderGorm{
-		Order:models.Order{
-			ExchangeOrderID:orderID,
-			Type: orderType,
-			Trading:t.traderConfig.Trading,
-			Settlement:t.traderConfig.Settlement,},
-		ExchangeID:t.traderConfig.ExchangeID,
-		TraderID:t.traderConfig.ID,
-		PositionID:positionID,
-		Status: true,
-		Price: price,
+		Order: models.Order{
+			ExchangeOrderID: orderID,
+			Type:            orderType,
+			Trading:         t.traderConfig.Trading,
+			Settlement:      t.traderConfig.Settlement},
+		ExchangeID: t.traderConfig.ExchangeID,
+		TraderID:   t.traderConfig.ID,
+		PositionID: positionID,
+		Status:     true,
+		Price:      price,
 	}
 
-	orderLocalID,err :=t.OrderRepository.Insert(orderData)
+	orderLocalID, err := t.OrderRepository.Insert(orderData)
 	if err != nil {
 		return err
 	}
 
-	if err = t.PositionRepository.UpdateExitOrder(positionID,orderLocalID); err != nil {
+	if err = t.PositionRepository.UpdateExitOrder(positionID, orderLocalID); err != nil {
 		return err
 	}
 	return nil
@@ -119,7 +127,7 @@ func (t *traderBot) MakePosition(price float64, speedScale float64) (string, err
 	amount := total / price
 	t.traderConfig.TradingAmount = amount
 
-	orderExchangeID, err := t.ExchangePrivateRepository.Order(t.Position.Trading,t.Position.Settlement,orderType,price,amount)
+	orderExchangeID, err := t.ExchangePrivateRepository.Order(t.Position.Trading, t.Position.Settlement, orderType, price, amount)
 	if err != nil {
 		logger.Get().Info("order failed:%s", err)
 		return "", errors.Wrap(err, "failed to order!")
@@ -142,7 +150,7 @@ func (t *traderBot) MakePosition(price float64, speedScale float64) (string, err
 			return orderExchangeID, nil
 		}
 		if elapsedSecond >= t.Position.WaitLimitSecond {
-			err := t.ExchangePrivateRepository.CancelOrder(orderExchangeID,t.Position.Trading+"_"+t.Position.Settlement)
+			err := t.ExchangePrivateRepository.CancelOrder(orderExchangeID, t.Position.Trading+"_"+t.Position.Settlement)
 			if err == nil {
 				return "", errors.New("failed to complete order")
 			}
@@ -159,7 +167,7 @@ func (t *traderBot) ClosePosition(price float64, speedScale float64) (string, er
 	}
 
 	amount := t.traderConfig.TradingAmount * (1 - 0.0025)
-	orderExchangeID, err := t.ExchangePrivateRepository.Order(t.Position.Trading,t.Position.Settlement,orderType,price,amount)
+	orderExchangeID, err := t.ExchangePrivateRepository.Order(t.Position.Trading, t.Position.Settlement, orderType, price, amount)
 	if err != nil {
 		logger.Get().Info("order failed:%s", err)
 		return "", errors.Wrap(err, "failed to order!")
@@ -181,7 +189,7 @@ func (t *traderBot) ClosePosition(price float64, speedScale float64) (string, er
 			return orderExchangeID, nil
 		}
 		if elapsedSecond >= t.Position.WaitLimitSecond {
-			err := t.ExchangePrivateRepository.CancelOrder(orderExchangeID,t.Position.Trading+"_"+t.Position.Settlement)
+			err := t.ExchangePrivateRepository.CancelOrder(orderExchangeID, t.Position.Trading+"_"+t.Position.Settlement)
 			if err == nil {
 				return "", errors.New("failed to complete order")
 			}
@@ -212,7 +220,7 @@ func (t *traderBot) judgeEntryLoop(ctx context.Context, speedScale float64) {
 }
 
 func (t *traderBot) makePositionLoop(ctx context.Context, positionID uint, speedScale float64) error {
-	chart, err := t.ChartRepository.Find(t.traderConfig.ExchangeID,t.traderConfig.Duration,t.traderConfig.Trading,t.traderConfig.Settlement)
+	chart, err := t.ChartRepository.Find(t.traderConfig.ExchangeID, t.traderConfig.Duration, t.traderConfig.Trading, t.traderConfig.Settlement)
 	if err != nil {
 		return err
 	}
@@ -238,7 +246,7 @@ func (t *traderBot) judgeExitLoop(ctx context.Context, speedScale float64) error
 	for {
 		select {
 		case <-timer.C:
-			chart, err := t.ChartRepository.Find(t.traderConfig.ExchangeID,t.traderConfig.Duration,t.traderConfig.Trading,t.traderConfig.Settlement)
+			chart, err := t.ChartRepository.Find(t.traderConfig.ExchangeID, t.traderConfig.Duration, t.traderConfig.Trading, t.traderConfig.Settlement)
 			if err != nil {
 				return err
 			}
@@ -255,7 +263,7 @@ func (t *traderBot) judgeExitLoop(ctx context.Context, speedScale float64) error
 }
 
 func (t *traderBot) closePositionLoop(ctx context.Context, positionID uint, speedScale float64) error {
-	chart, err := t.ChartRepository.Find(t.traderConfig.ExchangeID,t.traderConfig.Duration,t.traderConfig.Trading,t.traderConfig.Settlement)
+	chart, err := t.ChartRepository.Find(t.traderConfig.ExchangeID, t.traderConfig.Duration, t.traderConfig.Trading, t.traderConfig.Settlement)
 	if err != nil {
 		return err
 	}
@@ -279,16 +287,16 @@ func (t *traderBot) SetPosition(position *models.Position) {
 
 func (t *traderBot) PositionStart() (uint, error) {
 	position := &models.Position{
-		ExchangeID:t.traderConfig.ExchangeID,
-		AssetDistributionRate:t.traderConfig.AssetDistributionRate,
-		ProfitTakeRate:t.traderConfig.ProfitTakeRate,
-		LossCutRate:t.traderConfig.LossCutRate,
-		PositionType:t.traderConfig.PositionType,
-		Trading:t.traderConfig.Trading,
-		Settlement:t.traderConfig.Settlement,
-		WaitLimitSecond:t.traderConfig.WaitLimitSecond,
+		ExchangeID:            t.traderConfig.ExchangeID,
+		AssetDistributionRate: t.traderConfig.AssetDistributionRate,
+		ProfitTakeRate:        t.traderConfig.ProfitTakeRate,
+		LossCutRate:           t.traderConfig.LossCutRate,
+		PositionType:          t.traderConfig.PositionType,
+		Trading:               t.traderConfig.Trading,
+		Settlement:            t.traderConfig.Settlement,
+		WaitLimitSecond:       t.traderConfig.WaitLimitSecond,
 	}
-	positionID,err:=t.PositionRepository.Insert(position,t.traderConfig.ID)
+	positionID, err := t.PositionRepository.Insert(position, t.traderConfig.ID)
 	if err != nil {
 		return 0, err
 	}

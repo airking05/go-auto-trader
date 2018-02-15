@@ -32,7 +32,6 @@ func (t *traderGorm) Find(traderID uint) (*models.TraderGorm, error) {
 	return traderGorm, nil
 }
 
-
 func (t *traderGorm) FindNByStatus(status string, limit int, offset int) ([]models.TraderGorm, error) {
 	var traderConfigs []models.TraderGorm
 

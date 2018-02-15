@@ -6,7 +6,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-
 type Status string
 
 const (
@@ -16,7 +15,6 @@ const (
 	Removed  = "removed"
 	Waiting  = "waiting"
 )
-
 
 type TradePhase int
 
@@ -32,22 +30,21 @@ const (
 	ShutDown
 )
 
-
 type TraderGorm struct {
 	gorm.Model
 	ExchangeID               ExchangeID   `json:"exchange_id"`
-	Trading                  string `json:"trading"`
-	Settlement               string `json:"settlement"`
-	LossCutRate              float64             `json:"loss_cut_rate"`
-	ProfitTakeRate           float64             `json:"profit_take_rate"`
-	TradingAmount            float64             `json:"trading_amount"`
-	AssetDistributionRate    float64             `json:"asset_distribution_rate"`
+	Trading                  string       `json:"trading"`
+	Settlement               string       `json:"settlement"`
+	LossCutRate              float64      `json:"loss_cut_rate"`
+	ProfitTakeRate           float64      `json:"profit_take_rate"`
+	TradingAmount            float64      `json:"trading_amount"`
+	AssetDistributionRate    float64      `json:"asset_distribution_rate"`
 	PositionType             PositionType `json:"position_type"`
-	Duration                 int                 `json:"duration"`
-	WaitLimitSecond          int                 `json:"wait_limit_second"`
-	MakePositionLogicsString string              `json:"make_position_logics_string" sql:"type:text"`
-	MakePositionLogicsYaml   LogicYaml     `sql:"-" json:"make_position_logics_yaml"`
-	Status                   string              `json:"status"`
+	Duration                 int          `json:"duration"`
+	WaitLimitSecond          int          `json:"wait_limit_second"`
+	MakePositionLogicsString string       `json:"make_position_logics_string" sql:"type:text"`
+	MakePositionLogicsYaml   LogicYaml    `sql:"-" json:"make_position_logics_yaml"`
+	Status                   string       `json:"status"`
 }
 
 func (t *TraderGorm) BeforeSave(scope *gorm.Scope) (err error) {

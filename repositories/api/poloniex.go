@@ -1,24 +1,24 @@
 package api
 
 import (
-	"encoding/json"
-	"github.com/antonholmquist/jason"
-	"github.com/pkg/errors"
-	"gitlab.com/fxpg/alphatrader/logger"
-	"gitlab.com/fxpg/alphatrader/models"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-	"net/url"
 	"bytes"
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/hex"
-	"io/ioutil"
-	"github.com/davecgh/go-spew/spew"
+	"encoding/json"
 	"fmt"
+	"github.com/antonholmquist/jason"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
+	"gitlab.com/fxpg/alphatrader/logger"
+	"gitlab.com/fxpg/alphatrader/models"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 )
 
 const (
@@ -62,7 +62,7 @@ func parseCurrencyPair(s string) (string, string, error) {
 	xs := strings.Split(s, "_")
 
 	if len(xs) != 2 {
-		return "","", errors.New("invalid ticker title")
+		return "", "", errors.New("invalid ticker title")
 	}
 	return xs[0], xs[1], nil
 }
@@ -333,7 +333,7 @@ func (p *PoloniexApi) Order(trading string, settlement string, ordertype models.
 		return "", errors.Errorf("unknown order type %d", ordertype)
 	}
 
-	pair := fmt.Sprintf("%s_%s",settlement,trading)
+	pair := fmt.Sprintf("%s_%s", settlement, trading)
 
 	args := make(map[string]string)
 	args["currencyPair"] = pair
@@ -349,7 +349,7 @@ func (p *PoloniexApi) Order(trading string, settlement string, ordertype models.
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to parse response json %s", string(bs))
 	}
-	orderNumberInt,err := strconv.Atoi(res.OrderNumber)
+	orderNumberInt, err := strconv.Atoi(res.OrderNumber)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to parse response json %s", string(bs))
 	}

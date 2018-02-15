@@ -1,11 +1,11 @@
 package repositories
 
 import (
+	"github.com/airking05/go-auto-trader/logger"
+	"github.com/airking05/go-auto-trader/models"
 	"github.com/airking05/go-auto-trader/services"
 	"github.com/jinzhu/gorm"
-	"github.com/airking05/go-auto-trader/models"
 	"github.com/pkg/errors"
-	"github.com/airking05/go-auto-trader/logger"
 )
 
 func NewPosition(exchangeID models.ExchangeID, assetDistributionRate float64, ptrate float64, lcrate float64, ptype models.PositionType, trading string, settlement string, limitsec int) *models.Position {
@@ -84,13 +84,13 @@ func (t *positionStorage) UpdateToClosed(positionID uint) error {
 	}
 	return nil
 }
-func (t *positionStorage) UpdateEntryOrder(positionID uint,orderID uint) error {
+func (t *positionStorage) UpdateEntryOrder(positionID uint, orderID uint) error {
 	if err := t.db.Model(&models.Position{ID: positionID}).UpdateColumn("entry_order_id", orderID).Error; err != nil {
 		return err
 	}
 	return nil
 }
-func (t *positionStorage) UpdateExitOrder(positionID uint,orderID uint) error {
+func (t *positionStorage) UpdateExitOrder(positionID uint, orderID uint) error {
 	if err := t.db.Model(&models.Position{ID: positionID}).UpdateColumn("entry_close_id", orderID).Error; err != nil {
 		return err
 	}

@@ -16,7 +16,6 @@ type ChartRepository interface {
 	Truncate() error
 }
 
-
 //go:generate mockery -name=OrderRepository
 type OrderRepository interface {
 	Insert(orderData *models.OrderGorm) (uint, error)
@@ -33,8 +32,8 @@ type PositionRepository interface {
 	FindAll() ([]models.Position, error)
 	UpdateToMade(positionID uint) error
 	UpdateToClosed(positionID uint) error
-	UpdateEntryOrder(positionID uint,orderID uint) error
-	UpdateExitOrder(positionID uint,orderID uint) error
+	UpdateEntryOrder(positionID uint, orderID uint) error
+	UpdateExitOrder(positionID uint, orderID uint) error
 	Truncate() error
 }
 

@@ -21,19 +21,19 @@ type Logic interface {
 }
 
 type rsifollow struct {
-	period       int                 `yaml:"period"`
+	period       int          `yaml:"period"`
 	positionType PositionType `yaml:"position_type"`
-	param        float64             `yaml:"param"`
+	param        float64      `yaml:"param"`
 }
 type rsicontrarian struct {
-	period       int                 `yaml:"period"`
+	period       int          `yaml:"period"`
 	positionType PositionType `yaml:"position_type"`
-	param        float64             `yaml:"param"`
+	param        float64      `yaml:"param"`
 }
 type obv struct {
-	period       int                 `yaml:"period"`
+	period       int          `yaml:"period"`
 	positionType PositionType `yaml:"position_type"`
-	param        float64             `yaml:"param"`
+	param        float64      `yaml:"param"`
 }
 
 type emadif struct {
@@ -53,9 +53,9 @@ type wmadif struct {
 
 type smaLineCross struct {
 	positionType PositionType `yaml:"position_type"`
-	shortPeriod  int                 `yaml:"short_period"`
-	longPeriod   int                 `yaml:"long_period"`
-	keepPeriod   int                 `yaml:"keep_period"`
+	shortPeriod  int          `yaml:"short_period"`
+	longPeriod   int          `yaml:"long_period"`
+	keepPeriod   int          `yaml:"keep_period"`
 }
 
 func NewSmaLineCross(positionType PositionType, shortPeriod int, longPeriod int, keepPeriod int) Logic {

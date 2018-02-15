@@ -3,9 +3,9 @@ package repositories
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
-	"github.com/airking05/go-auto-trader/services"
 	"github.com/airking05/go-auto-trader/models"
+	"github.com/airking05/go-auto-trader/services"
+	"github.com/jinzhu/gorm"
 )
 
 func NewChartRepositoryGorm(db *gorm.DB) services.ChartRepository {

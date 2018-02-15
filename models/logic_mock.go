@@ -1,7 +1,6 @@
 package models
 
-import (
-)
+import ()
 
 type fakeLogic struct {
 	Logic

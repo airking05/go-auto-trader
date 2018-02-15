@@ -5,18 +5,18 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
-	"github.com/antonholmquist/jason"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"time"
-	"sync"
-	"net/url"
-	"github.com/pkg/errors"
 	"encoding/json"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/airking05/go-auto-trader/logger"
 	"github.com/airking05/go-auto-trader/models"
+	"github.com/antonholmquist/jason"
+	"github.com/davecgh/go-spew/spew"
+	"github.com/pkg/errors"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
+	"sync"
+	"time"
 )
 
 const (
@@ -69,7 +69,7 @@ func (b *BitflyerApi) privateApiUrl() string {
 	return b.c.BaseURL
 }
 
-func (b *BitflyerApi)privateApi(method string,path string,  args map[string]string) ([]byte, error) {
+func (b *BitflyerApi) privateApi(method string, path string, args map[string]string) ([]byte, error) {
 	cli := &http.Client{}
 	var err error
 
@@ -79,12 +79,12 @@ func (b *BitflyerApi)privateApi(method string,path string,  args map[string]stri
 			val.Add(k, v)
 		}
 	}
-	nonce:=strconv.FormatInt(time.Now().Unix(), 10)
-	jsonString,err:=json.Marshal(args)
+	nonce := strconv.FormatInt(time.Now().Unix(), 10)
+	jsonString, err := json.Marshal(args)
 	if err != nil {
 		return nil, err
 	}
-	text := nonce+method+path+string(jsonString)
+	text := nonce + method + path + string(jsonString)
 
 	reader := bytes.NewReader([]byte(val.Encode()))
 	req, err := http.NewRequest(method, b.privateApiUrl()+path, reader)
@@ -103,7 +103,6 @@ func (b *BitflyerApi)privateApi(method string,path string,  args map[string]stri
 	req.Header.Add("ACCESS-TIMESTAMP", nonce)
 	req.Header.Add("ACCESS-KEY", b.c.Apikey)
 	req.Header.Add("ACCESS-SIGN", hex.EncodeToString(sign))
-
 
 	res, err := cli.Do(req)
 	if err != nil {
@@ -202,7 +201,7 @@ func (b *BitflyerApi) CompleteBalances() (map[string]*models.Balance, error) {
 	balancepath := "/v1/me/getbalance"
 	method := "GET"
 
-	resBody, err := b.privateApi( balancepath, method, map[string]string{})
+	resBody, err := b.privateApi(balancepath, method, map[string]string{})
 	if err != nil {
 		return nil, err
 	}
@@ -262,13 +261,13 @@ func (b *BitflyerApi) ActiveOrders() ([]*models.Order, error) {
 	}
 	var activeOrders []*models.Order
 
-	for _,v := range activeOrderArray {
-		exchangeOrderId,err := v.GetString("id")
+	for _, v := range activeOrderArray {
+		exchangeOrderId, err := v.GetString("id")
 		if err != nil {
 			continue
 		}
 		var orderType models.OrderType
-		orderTypeStr,err := v.GetString("side")
+		orderTypeStr, err := v.GetString("side")
 		if err != nil {
 			continue
 		}
@@ -277,26 +276,26 @@ func (b *BitflyerApi) ActiveOrders() ([]*models.Order, error) {
 		} else if orderTypeStr == "SELL" {
 			orderType = models.Bid
 		}
-		productCodeStr,err := v.GetString("product_code")
+		productCodeStr, err := v.GetString("product_code")
 		if err != nil {
 			continue
 		}
-		trading,settlement,err := parseCurrencyPair(productCodeStr)
-		amount,err := v.GetFloat64("size")
+		trading, settlement, err := parseCurrencyPair(productCodeStr)
+		amount, err := v.GetFloat64("size")
 		if err != nil {
 			continue
 		}
-		price,err := v.GetFloat64("price")
+		price, err := v.GetFloat64("price")
 		if err != nil {
 			continue
 		}
-		activeOrders = append(activeOrders,&models.Order{
-			ExchangeOrderID:exchangeOrderId,
-			Type:orderType,
-			Trading:trading,
-			Settlement:settlement,
-			Price:price,
-			Amount:amount,
+		activeOrders = append(activeOrders, &models.Order{
+			ExchangeOrderID: exchangeOrderId,
+			Type:            orderType,
+			Trading:         trading,
+			Settlement:      settlement,
+			Price:           price,
+			Amount:          amount,
 		})
 
 	}
@@ -312,7 +311,7 @@ func (b *BitflyerApi) Order(trading string, settlement string, ordertype models.
 	method := "POST"
 
 	param := make(map[string]string)
-	param["product_code"] = trading + "_" +settlement
+	param["product_code"] = trading + "_" + settlement
 	param["child_order_type"] = "LIMIT"
 
 	var cmd string
@@ -325,8 +324,8 @@ func (b *BitflyerApi) Order(trading string, settlement string, ordertype models.
 	}
 	param["side"] = cmd
 
-	param["price"] = strconv.FormatFloat(price, 'f',8,64)
-	param["size"] = strconv.FormatFloat(amount, 'f',8,64)
+	param["price"] = strconv.FormatFloat(price, 'f', 8, 64)
+	param["size"] = strconv.FormatFloat(amount, 'f', 8, 64)
 
 	bs, err := b.privateApi(orderpath, method, param)
 	if err != nil {
@@ -350,7 +349,7 @@ func (b *BitflyerApi) CancelOrder(orderNumber string, productCode string) error 
 	args["child_order_id"] = orderNumber
 	args["product_code"] = productCode
 
-	_, err := b.privateApi("POST","/v1/me/sendchildorder", args)
+	_, err := b.privateApi("POST", "/v1/me/sendchildorder", args)
 	if err != nil {
 		return errors.Wrapf(err, "failed to cancel order")
 	}
@@ -359,5 +358,5 @@ func (b *BitflyerApi) CancelOrder(orderNumber string, productCode string) error 
 }
 
 func (b *BitflyerApi) Address(c string) (string, error) {
-	return "",errors.New("bitflyer address api not implemented")
+	return "", errors.New("bitflyer address api not implemented")
 }

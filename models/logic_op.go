@@ -1,7 +1,6 @@
 package models
 
-import (
-)
+import ()
 
 func And(a Logic, b Logic) Logic {
 	return &logicAnd{a, b}
