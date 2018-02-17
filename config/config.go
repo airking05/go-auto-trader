@@ -2,10 +2,13 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
 	"os"
+
+	"github.com/airking05/go-auto-trader/models"
+
+	"gopkg.in/yaml.v2"
 )
 
 type DB struct {
@@ -17,8 +20,9 @@ type DB struct {
 }
 
 type Config struct {
-	Debug        bool   `yaml:"debug"`
-	DBConnection string `yaml:"db_connection"`
+	Debug        bool              `yaml:"debug"`
+	DBConnection string            `yaml:"db_connection"`
+	TraderConfig models.TraderGorm `yaml:"trader_config"`
 }
 
 func ReadConfig(path string) *Config {

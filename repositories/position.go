@@ -3,7 +3,6 @@ package repositories
 import (
 	"github.com/airking05/go-auto-trader/logger"
 	"github.com/airking05/go-auto-trader/models"
-	"github.com/airking05/go-auto-trader/services"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 )
@@ -22,29 +21,23 @@ func NewPosition(exchangeID models.ExchangeID, assetDistributionRate float64, pt
 	}
 }
 
-type positionStorage struct {
-	db *gorm.DB
+type PositionStorage struct {
+	DB *gorm.DB `inject:""`
 }
 
-func NewPositionStorage(db *gorm.DB) services.PositionRepository {
-	return &positionStorage{
-		db: db,
-	}
-}
-
-func (d *positionStorage) FindNUnclosedByTraderID(traderID uint) ([]models.Position, error) {
+func (d *PositionStorage) FindNUnclosedByTraderID(traderID uint) ([]models.Position, error) {
 	var positions []models.Position
 
-	if err := d.db.Where(&models.Position{TraderID: traderID, IsMade: true, IsClosed: false}).Find(&positions).Error; err != nil {
+	if err := d.DB.Where(&models.Position{TraderID: traderID, IsMade: true, IsClosed: false}).Find(&positions).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to get positions by trader_id")
 	}
 	return positions, nil
 }
 
-func (d *positionStorage) Insert(position *models.Position, traderID uint) (uint, error) {
+func (d *PositionStorage) Insert(position *models.Position, traderID uint) (uint, error) {
 	position.TraderID = traderID
-	if isNew := d.db.NewRecord(position); isNew == true {
-		err := d.db.Create(&position).Error
+	if isNew := d.DB.NewRecord(position); isNew == true {
+		err := d.DB.Create(&position).Error
 		if err != nil {
 			logger.Get().Error(err)
 			return 0, err
@@ -55,48 +48,48 @@ func (d *positionStorage) Insert(position *models.Position, traderID uint) (uint
 	return 0, err
 }
 
-func (d *positionStorage) FindNByTraderID(traderID uint) ([]models.Position, error) {
+func (d *PositionStorage) FindNByTraderID(traderID uint) ([]models.Position, error) {
 	var positions []models.Position
 
-	if err := d.db.Where(&models.Position{TraderID: traderID}).Order("created_at desc").Find(&positions).Error; err != nil {
+	if err := d.DB.Where(&models.Position{TraderID: traderID}).Order("created_at desc").Find(&positions).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to get positions by trader_id")
 	}
 	return positions, nil
 }
 
-func (d *positionStorage) FindAll() ([]models.Position, error) {
+func (d *PositionStorage) FindAll() ([]models.Position, error) {
 	var positions []models.Position
-	if err := d.db.Find(&positions).Error; err != nil {
+	if err := d.DB.Find(&positions).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to get traderConfig list")
 	}
 	return positions, nil
 }
 
-func (t *positionStorage) UpdateToMade(positionID uint) error {
-	if err := t.db.Model(&models.Position{ID: positionID}).UpdateColumn("is_made", true).Error; err != nil {
+func (t *PositionStorage) UpdateToMade(positionID uint) error {
+	if err := t.DB.Model(&models.Position{ID: positionID}).UpdateColumn("is_made", true).Error; err != nil {
 		return err
 	}
 	return nil
 }
-func (t *positionStorage) UpdateToClosed(positionID uint) error {
-	if err := t.db.Model(&models.Position{ID: positionID}).UpdateColumn("is_closed", true).Error; err != nil {
+func (t *PositionStorage) UpdateToClosed(positionID uint) error {
+	if err := t.DB.Model(&models.Position{ID: positionID}).UpdateColumn("is_closed", true).Error; err != nil {
 		return err
 	}
 	return nil
 }
-func (t *positionStorage) UpdateEntryOrder(positionID uint, orderID uint) error {
-	if err := t.db.Model(&models.Position{ID: positionID}).UpdateColumn("entry_order_id", orderID).Error; err != nil {
+func (t *PositionStorage) UpdateEntryOrder(positionID uint, orderID uint) error {
+	if err := t.DB.Model(&models.Position{ID: positionID}).UpdateColumn("entry_order_id", orderID).Error; err != nil {
 		return err
 	}
 	return nil
 }
-func (t *positionStorage) UpdateExitOrder(positionID uint, orderID uint) error {
-	if err := t.db.Model(&models.Position{ID: positionID}).UpdateColumn("entry_close_id", orderID).Error; err != nil {
+func (t *PositionStorage) UpdateExitOrder(positionID uint, orderID uint) error {
+	if err := t.DB.Model(&models.Position{ID: positionID}).UpdateColumn("entry_close_id", orderID).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (t *positionStorage) Truncate() error {
-	return t.db.Exec("TRUNCATE TABLE positions").Error
+func (t *PositionStorage) Truncate() error {
+	return t.DB.Exec("TRUNCATE TABLE positions").Error
 }

@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/jinzhu/gorm"
 	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type OrderType int
@@ -30,9 +31,9 @@ type OrderGorm struct {
 	Pair       string `json:"currency_pair"`
 	OrderID    string `json:"order_id"`
 
-	Datetime  time.Time    `json:"datetime"`
-	Status    bool         `json:"status"`
-	Price     float64      `json:"price"`
-	Amount    float64      `json:"amount"`
-	TradeType PositionType `json:"trade_type"`
+	Datetime     time.Time    `json:"datetime"`
+	Status       bool         `json:"status"`
+	ExcutePrice  float64      `json:"price"`
+	ExcuteAmount float64      `json:"amount"`
+	TradeType    PositionType `json:"trade_type"`
 }

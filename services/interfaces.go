@@ -1,8 +1,11 @@
 package services
 
 import (
-	"github.com/airking05/go-auto-trader/models"
 	"time"
+
+	"github.com/airking05/go-auto-trader/models"
+	"github.com/airking05/go-auto-trader/repositories/api"
+	"github.com/pkg/errors"
 )
 
 //go:generate mockery -name=ChartRepository
@@ -40,7 +43,7 @@ type PositionRepository interface {
 //go:generate mockery -name=TraderRepository
 type TraderRepository interface {
 	Insert(traderConfig *models.TraderGorm) (uint, error)
-	Find(traderConfigID uint) (models.TraderGorm, error)
+	Find(traderConfigID uint) (*models.TraderGorm, error)
 	FindNByStatus(status string, limit int, offset int) ([]models.TraderGorm, error)
 	FindAllByStatus(status string) ([]models.TraderGorm, error)
 	UpdateStatusByID(traderID uint, status string) error
@@ -62,4 +65,15 @@ type ExchangePrivateRepository interface {
 		amount float64, additionalFee float64) error
 	CancelOrder(orderNumber string, productCode string) error
 	Address(c string) (string, error)
+}
+
+func NewExchangePrivateRepository(id models.ExchangeID, apikey string, seckey string) (ExchangePrivateRepository, error) {
+	switch id {
+	case models.Bitflyer:
+		return api.NewBitflyerApi(apikey, seckey)
+
+	case models.Poloniex:
+		return api.NewPoloniexApi(apikey, seckey)
+	}
+	return nil, errors.New("failed to init exchange api")
 }

@@ -32,19 +32,21 @@ const (
 
 type TraderGorm struct {
 	gorm.Model
-	ExchangeID               ExchangeID   `json:"exchange_id"`
-	Trading                  string       `json:"trading"`
-	Settlement               string       `json:"settlement"`
-	LossCutRate              float64      `json:"loss_cut_rate"`
-	ProfitTakeRate           float64      `json:"profit_take_rate"`
-	TradingAmount            float64      `json:"trading_amount"`
-	AssetDistributionRate    float64      `json:"asset_distribution_rate"`
-	PositionType             PositionType `json:"position_type"`
-	Duration                 int          `json:"duration"`
-	WaitLimitSecond          int          `json:"wait_limit_second"`
-	MakePositionLogicsString string       `json:"make_position_logics_string" sql:"type:text"`
-	MakePositionLogicsYaml   LogicYaml    `sql:"-" json:"make_position_logics_yaml"`
-	Status                   string       `json:"status"`
+	ExchangeID               ExchangeID `yaml:"exchange_id"`
+	APIKey                   string     `yaml:"api_key"`
+	SecretKey                string     `yaml:"secret_key"`
+	Trading                  string     `yaml:"trading"`
+	Settlement               string     `yaml:"settlement"`
+	LossCutRate              float64    `yaml:"loss_cut_rate"`
+	ProfitTakeRate           float64    `yaml:"profit_take_rate"`
+	AssetDistributionRate    float64    `yaml:"asset_distribution_rate"`
+	TradingAmount            float64
+	PositionType             PositionType `yaml:"position_type"`
+	Duration                 int          `yaml:"duration"`
+	WaitLimitSecond          int          `yaml:"wait_limit_second"`
+	MakePositionLogicsString string       `yaml:"make_position_logics" sql:"type:text"`
+	MakePositionLogicsYaml   LogicYaml    `sql:"-" yaml:"make_position_logics_yaml"`
+	Status                   string       `yaml:"status"`
 }
 
 func (t *TraderGorm) BeforeSave(scope *gorm.Scope) (err error) {

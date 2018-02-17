@@ -4,15 +4,8 @@ import (
 	"time"
 
 	"github.com/airking05/go-auto-trader/models"
-	"github.com/airking05/go-auto-trader/services"
 	"github.com/jinzhu/gorm"
 )
-
-func NewChartRepositoryGorm(db *gorm.DB) services.ChartRepository {
-	return &ChartRepositoryGorm{
-		DB: db,
-	}
-}
 
 type ChartRepositoryGorm struct {
 	DB *gorm.DB `inject:""`

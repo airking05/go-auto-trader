@@ -2,10 +2,12 @@ package services
 
 import (
 	"context"
+	"sync"
+	"time"
+
 	"github.com/airking05/go-auto-trader/logger"
 	"github.com/airking05/go-auto-trader/models"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type TraderBot interface {
@@ -29,15 +31,69 @@ type traderBot struct {
 	Position                  *models.Position
 	Phase                     models.TradePhase
 	traderConfig              *models.TraderGorm
-
-	entrylogics models.Logic
+	entrylogics               models.Logic
 }
 
 type TraderServiceImpl struct {
 	ChartRepository    ChartRepository    `inject:""`
 	PositionRepository PositionRepository `inject:""`
 	OrderRepository    OrderRepository    `inject:""`
-	botMap             map[int]context.CancelFunc
+	TraderRepository   TraderRepository   `inject:""`
+	BotMap             BotMap
+}
+
+func NewBotMap() BotMap {
+	return BotMap{lock: &sync.RWMutex{}, m: make(map[int]context.CancelFunc)}
+}
+
+type BotMap struct {
+	lock *sync.RWMutex
+	m    map[int]context.CancelFunc
+}
+
+func (bm *BotMap) Add(id int, cancelFunc context.CancelFunc) {
+	bm.lock.Lock()
+	defer bm.lock.Unlock()
+	bm.m[id] = cancelFunc
+}
+
+func (bm *BotMap) Cancel(id int) {
+	bm.lock.Lock()
+	defer bm.lock.Unlock()
+	bm.m[id]()
+	delete(bm.m, id)
+}
+
+func (bm *BotMap) Delete(id int) {
+	bm.lock.Lock()
+	defer bm.lock.Unlock()
+	delete(bm.m, id)
+}
+
+func (t *TraderServiceImpl) Run(traderGorm *models.TraderGorm) error {
+	traderId, err := t.TraderRepository.Insert(traderGorm)
+	if err != nil {
+		return err
+	}
+	exchangePrivateRepository, err := NewExchangePrivateRepository(traderGorm.ExchangeID, traderGorm.APIKey, traderGorm.SecretKey)
+	if err != nil {
+		return err
+	}
+	bot := &traderBot{
+		ChartRepository:           t.ChartRepository,
+		PositionRepository:        t.PositionRepository,
+		OrderRepository:           t.OrderRepository,
+		ExchangePrivateRepository: exchangePrivateRepository,
+		Phase:        models.Boot,
+		traderConfig: traderGorm,
+	}
+	ctx, cancelFunc := context.WithCancel(context.Background())
+	t.BotMap.Add(int(traderId), cancelFunc)
+	go func() {
+		logger.Get().Errorf("%v", bot.Execute(ctx, 1))
+		t.BotMap.Delete(int(traderId))
+	}()
+	return nil
 }
 
 func (t *traderBot) JudgeEntry() bool {
@@ -64,11 +120,11 @@ func (t *traderBot) SetPositionMade(positionID uint, orderID string) error {
 			Type:            orderType,
 			Trading:         t.traderConfig.Trading,
 			Settlement:      t.traderConfig.Settlement},
-		ExchangeID: t.traderConfig.ExchangeID,
-		TraderID:   (t.traderConfig.ID),
-		PositionID: positionID,
-		Status:     true,
-		Price:      t.Position.EntryPrice,
+		ExchangeID:  t.traderConfig.ExchangeID,
+		TraderID:    (t.traderConfig.ID),
+		PositionID:  positionID,
+		Status:      true,
+		ExcutePrice: t.Position.EntryPrice,
 	}
 	orderLocalID, err := t.OrderRepository.Insert(orderData)
 	if err != nil {
@@ -96,11 +152,11 @@ func (t *traderBot) SetPositionClosed(positionID uint, orderID string, price flo
 			Type:            orderType,
 			Trading:         t.traderConfig.Trading,
 			Settlement:      t.traderConfig.Settlement},
-		ExchangeID: t.traderConfig.ExchangeID,
-		TraderID:   t.traderConfig.ID,
-		PositionID: positionID,
-		Status:     true,
-		Price:      price,
+		ExchangeID:  t.traderConfig.ExchangeID,
+		TraderID:    t.traderConfig.ID,
+		PositionID:  positionID,
+		Status:      true,
+		ExcutePrice: price,
 	}
 
 	orderLocalID, err := t.OrderRepository.Insert(orderData)
