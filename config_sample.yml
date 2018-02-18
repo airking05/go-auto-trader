@@ -1,0 +1,26 @@
+debug: false
+test: false
+db_connection: mysql:mysql@tcp(localhost:3306)/goat?charset=utf8&parseTime=True&loc=UTC
+trader_config:
+  exchange_id: 1
+  api_key:
+  secret_key:
+  trading: "ETH"
+  settlement: "BTC"
+  loss_cut_rate: 0.05
+  profit_take_rate: 0.02
+  asset_distribution_rate: 1
+  position_type: 1
+  duration: 60
+  wait_limit_second: 3600
+  make_position_logics: "
+    logic: and
+      a:
+        logic: rsifollow
+        period: 30
+        param: 60
+      b:
+        logic: smaLineCross
+        short_period: 15
+        long_period: 50
+        keep_period: 1"
