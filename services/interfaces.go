@@ -22,8 +22,8 @@ type ChartRepository interface {
 //go:generate mockery -name=OrderRepository
 type OrderRepository interface {
 	Insert(orderData *models.OrderGorm) (uint, error)
-	Find(orderID uint) (models.OrderGorm, error)
-	FindNByPositionID(positionID uint) ([]models.OrderGorm, error)
+	Find(orderID uint) (*models.OrderGorm, error)
+	FindNByPositionID(positionID uint) ([]*models.OrderGorm, error)
 	Truncate() error
 }
 
@@ -44,10 +44,10 @@ type PositionRepository interface {
 type TraderRepository interface {
 	Insert(traderConfig *models.TraderGorm) (uint, error)
 	Find(traderConfigID uint) (*models.TraderGorm, error)
-	FindNByStatus(status string, limit int, offset int) ([]models.TraderGorm, error)
-	FindAllByStatus(status string) ([]models.TraderGorm, error)
+	FindNByStatus(status string, limit int, offset int) ([]*models.TraderGorm, error)
+	FindAllByStatus(status string) ([]*models.TraderGorm, error)
 	UpdateStatusByID(traderID uint, status string) error
-	FindAll() ([]models.TraderGorm, error)
+	FindAll() ([]*models.TraderGorm, error)
 	Truncate() error
 }
 

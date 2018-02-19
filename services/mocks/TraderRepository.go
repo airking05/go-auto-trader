@@ -10,14 +10,16 @@ type TraderRepository struct {
 }
 
 // Find provides a mock function with given fields: traderConfigID
-func (_m *TraderRepository) Find(traderConfigID uint) (models.TraderGorm, error) {
+func (_m *TraderRepository) Find(traderConfigID uint) (*models.TraderGorm, error) {
 	ret := _m.Called(traderConfigID)
 
-	var r0 models.TraderGorm
-	if rf, ok := ret.Get(0).(func(uint) models.TraderGorm); ok {
+	var r0 *models.TraderGorm
+	if rf, ok := ret.Get(0).(func(uint) *models.TraderGorm); ok {
 		r0 = rf(traderConfigID)
 	} else {
-		r0 = ret.Get(0).(models.TraderGorm)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.TraderGorm)
+		}
 	}
 
 	var r1 error
@@ -31,15 +33,15 @@ func (_m *TraderRepository) Find(traderConfigID uint) (models.TraderGorm, error)
 }
 
 // FindAll provides a mock function with given fields:
-func (_m *TraderRepository) FindAll() ([]models.TraderGorm, error) {
+func (_m *TraderRepository) FindAll() ([]*models.TraderGorm, error) {
 	ret := _m.Called()
 
-	var r0 []models.TraderGorm
-	if rf, ok := ret.Get(0).(func() []models.TraderGorm); ok {
+	var r0 []*models.TraderGorm
+	if rf, ok := ret.Get(0).(func() []*models.TraderGorm); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.TraderGorm)
+			r0 = ret.Get(0).([]*models.TraderGorm)
 		}
 	}
 
@@ -54,15 +56,15 @@ func (_m *TraderRepository) FindAll() ([]models.TraderGorm, error) {
 }
 
 // FindAllByStatus provides a mock function with given fields: status
-func (_m *TraderRepository) FindAllByStatus(status string) ([]models.TraderGorm, error) {
+func (_m *TraderRepository) FindAllByStatus(status string) ([]*models.TraderGorm, error) {
 	ret := _m.Called(status)
 
-	var r0 []models.TraderGorm
-	if rf, ok := ret.Get(0).(func(string) []models.TraderGorm); ok {
+	var r0 []*models.TraderGorm
+	if rf, ok := ret.Get(0).(func(string) []*models.TraderGorm); ok {
 		r0 = rf(status)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.TraderGorm)
+			r0 = ret.Get(0).([]*models.TraderGorm)
 		}
 	}
 
@@ -77,15 +79,15 @@ func (_m *TraderRepository) FindAllByStatus(status string) ([]models.TraderGorm,
 }
 
 // FindNByStatus provides a mock function with given fields: status, limit, offset
-func (_m *TraderRepository) FindNByStatus(status string, limit int, offset int) ([]models.TraderGorm, error) {
+func (_m *TraderRepository) FindNByStatus(status string, limit int, offset int) ([]*models.TraderGorm, error) {
 	ret := _m.Called(status, limit, offset)
 
-	var r0 []models.TraderGorm
-	if rf, ok := ret.Get(0).(func(string, int, int) []models.TraderGorm); ok {
+	var r0 []*models.TraderGorm
+	if rf, ok := ret.Get(0).(func(string, int, int) []*models.TraderGorm); ok {
 		r0 = rf(status, limit, offset)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.TraderGorm)
+			r0 = ret.Get(0).([]*models.TraderGorm)
 		}
 	}
 

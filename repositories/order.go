@@ -12,7 +12,7 @@ type OrderDataStorage struct {
 }
 
 type OrderGormRepository interface {
-	Find(orderID uint) (models.OrderGorm, error)
+	Find(orderID uint) (*models.OrderGorm, error)
 	FindNByPositionID(positionID uint) ([]models.OrderGorm, error)
 	Insert(*models.OrderGorm) (uint, error)
 	Truncate() error
@@ -20,7 +20,7 @@ type OrderGormRepository interface {
 
 func (d *OrderDataStorage) Insert(orderData *models.OrderGorm) (uint, error) {
 	if isNew := d.DB.NewRecord(orderData); isNew == true {
-		err := d.DB.Create(&orderData).Error
+		err := d.DB.Create(orderData).Error
 		if err != nil {
 			logger.Get().Error(err)
 			return 0, err
@@ -31,17 +31,17 @@ func (d *OrderDataStorage) Insert(orderData *models.OrderGorm) (uint, error) {
 	return 0, err
 }
 
-func (d *OrderDataStorage) Find(orderID uint) (models.OrderGorm, error) {
-	var orderData models.OrderGorm
-	if err := d.DB.Where(orderID).Find(&orderData).Error; err != nil {
+func (d *OrderDataStorage) Find(orderID uint) (*models.OrderGorm, error) {
+	var orderData *models.OrderGorm
+	if err := d.DB.Where(orderID).Find(orderData).Error; err != nil {
 		return orderData, errors.Wrap(err, "failed to get order_data")
 	}
 	return orderData, nil
 }
 
-func (d *OrderDataStorage) FindNByPositionID(positionID uint) ([]models.OrderGorm, error) {
-	var orderDatas []models.OrderGorm
-	if err := d.DB.Where(&models.OrderGorm{PositionID: positionID}).Find(&orderDatas).Error; err != nil {
+func (d *OrderDataStorage) FindNByPositionID(positionID uint) ([]*models.OrderGorm, error) {
+	var orderDatas []*models.OrderGorm
+	if err := d.DB.Where(&models.OrderGorm{PositionID: positionID}).Find(orderDatas).Error; err != nil {
 		return orderDatas, errors.Wrap(err, "failed to get order_data by position id")
 	}
 	return orderDatas, nil
